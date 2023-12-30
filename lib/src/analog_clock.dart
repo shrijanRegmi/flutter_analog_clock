@@ -90,6 +90,13 @@ class AnalogClock extends StatefulWidget {
   /// sets the width of the center of the watch multiplied by this factor.
   /// Can be both greater and less than 1.0 but must be non-negative.
   final double centerPointWidthFactor;
+
+  /// This property is used to set the time update interval.
+  ///
+  /// If this time is set to Duration(seconds: 1), the time will be updated every second.
+  /// If this time is set to Duration(minutes: 1), the time will be updated every minute.
+  final Duration? timeUpdateDuration;
+
   const AnalogClock({
     super.key,
     this.dateTime,
@@ -129,6 +136,7 @@ class AnalogClock extends StatefulWidget {
     double? hourNumberRadiusFactor,
     this.centerPointColor = Colors.black,
     double? centerPointWidthFactor,
+    this.timeUpdateDuration,
   })  : assert(dialBorderWidthFactor == null ||
             (dialBorderWidthFactor >= 0.0 && dialBorderWidthFactor <= 1.0)),
         this.isKeepTime = isKeepTime ?? true,
@@ -184,6 +192,7 @@ class AnalogClock extends StatefulWidget {
     double? hourNumberRadiusFactor,
     Color? centerPointColor = Colors.grey,
     double? centerPointWidthFactor,
+    Duration? timeUpdateDuration,
   }) : this(
           key: key,
           dateTime: dateTime,
@@ -210,6 +219,7 @@ class AnalogClock extends StatefulWidget {
           hourNumberRadiusFactor: hourNumberRadiusFactor,
           centerPointColor: centerPointColor,
           centerPointWidthFactor: centerPointWidthFactor,
+          timeUpdateDuration: timeUpdateDuration,
         );
 
   @override
@@ -249,12 +259,15 @@ class AnalogClockState extends State<AnalogClock> {
   void _startOrStopTimer() {
     if (_isKeepTime) {
       if (_timer?.isActive != true) {
-        _timer = Timer.periodic(Duration(seconds: 1), (Timer timer) {
-          _dateTime = _dateTime.add(Duration(seconds: 1));
-          if (mounted) {
-            setState(() {});
-          }
-        });
+        _timer = Timer.periodic(
+          widget.timeUpdateDuration ?? Duration(seconds: 1),
+          (Timer timer) {
+            _dateTime = _dateTime.add(Duration(seconds: 1));
+            if (mounted) {
+              setState(() {});
+            }
+          },
+        );
       }
     } else {
       _timer?.cancel();
